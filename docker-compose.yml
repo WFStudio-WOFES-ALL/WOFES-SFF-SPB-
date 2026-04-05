@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  wofes-browser:
+    build: .
+    container_name: wofes-sff-browser
+    ports:
+      - "8080:8080"
+    volumes:
+      - wofes-data:/home/wofes/.local/share/wofes-sff
+      - tor-data:/var/lib/tor
+    environment:
+      - RUST_LOG=info
+      - TOR_ENABLED=true
+      - VPN_ENABLED=false
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun
+    restart: unless-stopped
+    networks:
+      - wofes-network
+
+  tor-proxy:
+    image: dperson/torproxy:latest
+    container_name: wofes-tor-proxy
+    ports:
+      - "9050:9050"
+      - "9051:9051"
+    volumes:
+      - tor-data:/var/lib/tor
+    environment:
+      - TOR_NEWNYM_PERIOD=600
+    restart: unless-stopped
+    networks:
+      - wofes-network
+
+  nginx-proxy:
+    image: nginx:alpine
+    container_name: wofes-nginx-proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - wofes-browser
+    restart: unless-stopped
+    networks:
+      - wofes-network
+
+volumes:
+  wofes-data:
+    driver: local
+  tor-data:
+    driver: local
+
+networks:
+  wofes-network:
+    driver: bridge

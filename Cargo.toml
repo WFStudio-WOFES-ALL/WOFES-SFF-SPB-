@@ -1,0 +1,17 @@
+[package]
+name = "wofes-ui"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+wofes-core = { path = "../core" }
+wofes-network = { path = "../network" }
+wofes-crypto = { path = "../crypto" }
+tokio.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+anyhow.workspace = true
+log.workspace = true
+chrono.workspace = true
